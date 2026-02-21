@@ -14,8 +14,11 @@ import {
   X,
   MessageCircle
 } from 'lucide-react';
+//hao
 import { motion, AnimatePresence } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
+import { sendChatMessage } from '../lib/api';
+
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -43,30 +46,63 @@ export function Layout() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages, isTyping]);
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
-    const userMsg = { role: 'user', text: inputValue, time: new Date() };
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue('');
-    setIsTyping(true);
+  // const handleSendMessage = () => {
+  //   if (!inputValue.trim()) return;
+  //   const userMsg = { role: 'user', text: inputValue, time: new Date() };
+  //   setMessages(prev => [...prev, userMsg]);
+  //   setInputValue('');
+  //   setIsTyping(true);
 
-    setTimeout(() => {
-      const lower = inputValue.toLowerCase();
-      let response = "I'm not sure about that. Try asking about 'TechCorp', 'match score', or 'outreach strategy'.";
+  //   setTimeout(() => {
+  //     const lower = inputValue.toLowerCase();
+  //     let response = "I'm not sure about that. Try asking about 'TechCorp', 'match score', or 'outreach strategy'.";
 
-      if (lower.includes('techcorp')) {
-        response = "TechCorp Industries (Germany) has a 95% match. They imported $2.3M last quarter and are expanding into 3 new markets. Klaus Schmidt is the key contact.";
-      } else if (lower.includes('score') || lower.includes('match')) {
-        response = "Matches are calculated using 3 vectors: Product Alignment (40%), Intent Intensity (30%), and Trade Momentum (30%). Any score >80% is high priority.";
-      } else if (lower.includes('outreach') || lower.includes('contact') || lower.includes('message')) {
-        response = "For high-score leads, I recommend a multi-channel sequence: 1. LinkedIn Personalized Intro, 2. Value-focused Email, 3. Follow-up Call after 48h.";
+  //     if (lower.includes('techcorp')) {
+  //       response = "TechCorp Industries (Germany) has a 95% match. They imported $2.3M last quarter and are expanding into 3 new markets. Klaus Schmidt is the key contact.";
+  //     } else if (lower.includes('score') || lower.includes('match')) {
+  //       response = "Matches are calculated using 3 vectors: Product Alignment (40%), Intent Intensity (30%), and Trade Momentum (30%). Any score >80% is high priority.";
+  //     } else if (lower.includes('outreach') || lower.includes('contact') || lower.includes('message')) {
+  //       response = "For high-score leads, I recommend a multi-channel sequence: 1. LinkedIn Personalized Intro, 2. Value-focused Email, 3. Follow-up Call after 48h.";
+  //     }
+
+  //     setMessages(prev => [...prev, { role: 'ai', text: response, time: new Date() }]);
+  //     setIsTyping(false);
+  //   }, 1500);
+  // };
+const handleSendMessage = async () => {
+  if (!inputValue.trim()) return;
+
+  const userMsg = { role: 'user', text: inputValue, time: new Date() };
+  setMessages(prev => [...prev, userMsg]);
+
+  const messageToSend = inputValue; // store before clearing
+  setInputValue('');
+  setIsTyping(true);
+
+  try {
+    const response = await sendChatMessage(messageToSend);
+
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'ai',
+        text: response.answer || response.response || JSON.stringify(response),
+        time: new Date()
       }
+    ]);
+  } catch (error) {
+    setMessages(prev => [
+      ...prev,
+      {
+        role: 'ai',
+        text: "Backend not reachable ",
+        time: new Date()
+      }
+    ]);
+  }
 
-      setMessages(prev => [...prev, { role: 'ai', text: response, time: new Date() }]);
-      setIsTyping(false);
-    }, 1500);
-  };
-
+  setIsTyping(false);
+};
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       {/* Stock Ticker */}
@@ -194,7 +230,7 @@ export function Layout() {
                   <div className="bg-slate-900 p-4 text-white flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-blue-400" />
-                      <span className="font-bold text-sm">AI Match Strategist</span>
+                      <span className="font-bold text-sm">TIPE AI </span>
                     </div>
                     <X className="w-5 h-5 cursor-pointer" onClick={() => setIsChatOpen(false)} />
                   </div>
