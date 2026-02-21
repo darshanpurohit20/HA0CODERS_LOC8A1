@@ -53,17 +53,20 @@ export function ApproveLeads() {
       setExitY(0);
     }, 300);
   };
-
+const tag = (document.activeElement as HTMLElement)?.tagName;
+if (tag === 'INPUT' || tag === 'TEXTAREA' || (document.activeElement as HTMLElement)?.isContentEditable) {
+  return;
+}
   // Keyboard Shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === 'a') handleSwipe('right');
-      if (e.key.toLowerCase() === 'r') handleSwipe('left');
-      if (e.key.toLowerCase() === 's') handleSwipe('up');
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentLead]);
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key.toLowerCase() === 'a') handleSwipe('right');
+  //     if (e.key.toLowerCase() === 'r') handleSwipe('left');
+  //     if (e.key.toLowerCase() === 's') handleSwipe('up');
+  //   };
+  //   window.addEventListener('keydown', handleKeyDown);
+  //   return () => window.removeEventListener('keydown', handleKeyDown);
+  // }, [currentLead]);
 
   if (pendingLeads.length === 0) {
     return (
