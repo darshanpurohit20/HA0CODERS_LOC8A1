@@ -7,7 +7,7 @@ OLLAMA_URL = f"http://{SETHS_IP}:11434/api/generate"
 
 def ask_seths_llama(prompt):
     payload = {
-        "model": "llama3",  # Ensure Seth has this model downloaded
+        "model": "llama3",  # 
         "prompt": prompt,
         "stream": False
     }
@@ -21,3 +21,4 @@ def ask_seths_llama(prompt):
 
 # Test it
 print(ask_seths_llama("Analyze this news: Import taxes on steel have risen by 5%."))
+
