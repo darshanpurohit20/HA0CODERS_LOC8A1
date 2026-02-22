@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { ApproveLeads } from './pages/ApproveLeads';
@@ -10,6 +10,17 @@ import { ContentEngine } from './pages/ContentEngine';
 import { Profile } from './pages/Profile';
 import { NotFound } from './pages/NotFound';
 import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import React from 'react';
+
+// Simple Auth Guard component
+const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const user = localStorage.getItem('user');
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  return <>{ children } </>;
+};
 
 export const router = createBrowserRouter([
   {
@@ -17,8 +28,16 @@ export const router = createBrowserRouter([
     Component: LoginPage,
   },
   {
+    path: '/register',
+    Component: RegisterPage,
+  },
+  {
     path: '/',
-    Component: Layout,
+    element: (
+      <AuthGuard>
+      <Layout />
+      </AuthGuard>
+    ),
     children: [
       { index: true, Component: Dashboard },
       { path: 'approve', Component: ApproveLeads },

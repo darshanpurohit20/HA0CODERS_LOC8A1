@@ -33,18 +33,18 @@ const navItems = [
 ];
 
 export function Layout() {
-    const [tradeSignals, setTradeSignals] = useState<any[]>([]);
-    useEffect(() => {
-  const loadSignals = async () => {
-    const data = await fetchTradeSignals();
-    setTradeSignals(data);
-  };
+  const [tradeSignals, setTradeSignals] = useState<any[]>([]);
+  useEffect(() => {
+    const loadSignals = async () => {
+      const data = await fetchTradeSignals();
+      setTradeSignals(data);
+    };
 
-  loadSignals();
-  const interval = setInterval(loadSignals, 30000);
+    loadSignals();
+    const interval = setInterval(loadSignals, 30000);
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
   //  useEffect(() => {
   //   const fetchTradeSignals = async () => {
   //     try {
@@ -64,7 +64,7 @@ export function Layout() {
   //   return () => clearInterval(interval);
   // }, []);
 
- 
+
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -79,70 +79,70 @@ export function Layout() {
     if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight;
   }, [messages, isTyping]);
 
-  
-const handleSendMessage = async () => {
-  if (!inputValue.trim()) return;
 
-  const userMsg = { role: 'user', text: inputValue, time: new Date() };
-  setMessages(prev => [...prev, userMsg]);
+  const handleSendMessage = async () => {
+    if (!inputValue.trim()) return;
 
-  const messageToSend = inputValue; // store before clearing
-  setInputValue('');
-  setIsTyping(true);
+    const userMsg = { role: 'user', text: inputValue, time: new Date() };
+    setMessages(prev => [...prev, userMsg]);
 
-  try {
-    const response = await sendChatMessage(messageToSend);
+    const messageToSend = inputValue; // store before clearing
+    setInputValue('');
+    setIsTyping(true);
 
-    setMessages(prev => [
-      ...prev,
-      {
-        role: 'ai',
-        text: response.answer || response.response || JSON.stringify(response),
-        time: new Date()
-      }
-    ]);
-  } catch (error) {
-    setMessages(prev => [
-      ...prev,
-      {
-        role: 'ai',
-        text: "Backend not reachable ",
-        time: new Date()
-      }
-    ]);
-  }
+    try {
+      const response = await sendChatMessage(messageToSend);
 
-  setIsTyping(false);
-};
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'ai',
+          text: response.answer || response.response || JSON.stringify(response),
+          time: new Date()
+        }
+      ]);
+    } catch (error) {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'ai',
+          text: "Backend not reachable ",
+          time: new Date()
+        }
+      ]);
+    }
+
+    setIsTyping(false);
+  };
   return (
     <div className="flex flex-col h-screen bg-slate-50 overflow-hidden">
       {/* Stock Ticker */}
       <div className="h-8 bg-slate-900 text-white flex items-center overflow-hidden border-b border-slate-700 relative z-50">
-       <motion.div
-  animate={{ x: [1000, -2000] }}
-  transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
-  className="whitespace-nowrap text-xs font-medium flex gap-12"
->
-  {tradeSignals.length > 0 ? (
-  tradeSignals.map((item, index) => {
-    const score = item?.ai_analysis?.trade_signal_score ?? 0;
-    const tag = item?.ai_analysis?.importance_tag ?? "Trade Update";
-    const headline = item?.headline ?? "";
+        <motion.div
+          animate={{ x: [1000, -2000] }}
+          transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+          className="whitespace-nowrap text-xs font-medium flex gap-12"
+        >
+          {tradeSignals.length > 0 ? (
+            tradeSignals.map((item, index) => {
+              const score = item?.ai_analysis?.trade_signal_score ?? 0;
+              const tag = item?.ai_analysis?.importance_tag ?? "Trade Update";
+              const headline = item?.headline ?? "";
 
-    let emoji = "🟡";
-    if (score >= 0.75) emoji = "🔴";
-    else if (score >= 0.6) emoji = "🟢";
+              let emoji = "🟡";
+              if (score >= 0.75) emoji = "🔴";
+              else if (score >= 0.6) emoji = "🟢";
 
-    return (
-      <span key={index}>
-        {emoji} {tag} — {headline.slice(0, 80)}...
-      </span>
-    );
-  })
-) : (
-  <span>Loading trade intelligence...</span>
-)}
-</motion.div>
+              return (
+                <span key={index}>
+                  {emoji} {tag} — {headline.slice(0, 80)}...
+                </span>
+              );
+            })
+          ) : (
+            <span>Loading trade intelligence...</span>
+          )}
+        </motion.div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -184,7 +184,14 @@ const handleSendMessage = async () => {
           </nav>
 
           <div className="p-4 border-t border-slate-700">
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors">
+            <button
+              onClick={() => {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/login';
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-lg transition-colors"
+            >
               <LogOut className="w-5 h-5" />
               <span className="font-medium text-sm">Logout</span>
             </button>

@@ -9,16 +9,18 @@ export interface Lead {
   intent_score: number;
   trade_momentum_index: number;
   match_percentage: number;
-  firmographics_hash: string;
+  firmographics_hash?: string;
   trust_verified: boolean;
   company_size: string;
   estimated_value: string;
-  ai_reasoning: string;
-  outreach_template: string;
+  ai_reasoning?: string;
+  outreach_template?: string;
   status: 'pending' | 'approved' | 'rejected' | 'skipped';
   contact_person?: string;
   email?: string;
   phone?: string;
+  country?: string;
+  revenue?: string;
 }
 
 export interface Message {
@@ -83,9 +85,10 @@ interface StoreState {
     conversionRate: number;
     approvalRate: number;
   };
-  
+
   // Actions
   setLeads: (leads: Lead[]) => void;
+  setApprovedLeads: (leads: Lead[]) => void;
   updateLeadStatus: (leadId: string, status: Lead['status']) => void;
   addConversation: (conversation: Conversation) => void;
   addMessage: (conversationId: string, message: Message) => void;
@@ -117,13 +120,17 @@ export const useStore = create<StoreState>((set, get) => ({
     get().updateStats();
   },
 
+  setApprovedLeads: (approvedLeads) => {
+    set({ approvedLeads });
+  },
+
   updateLeadStatus: (leadId, status) => {
     set((state) => {
       const leads = state.leads.map((lead) =>
         lead.id === leadId ? { ...lead, status } : lead
       );
-      
-      const approvedLeads = status === 'approved' 
+
+      const approvedLeads = status === 'approved'
         ? [...state.approvedLeads, leads.find(l => l.id === leadId)!]
         : state.approvedLeads;
 
@@ -190,7 +197,7 @@ export const useStore = create<StoreState>((set, get) => ({
     const approvedCount = state.leads.filter(l => l.status === 'approved').length;
     const activeConversations = state.conversations.filter(c => c.status === 'active').length;
     const completedMeetings = state.meetings.filter(m => m.status === 'completed').length;
-    
+
     set({
       stats: {
         activeLeads: state.leads.filter(l => l.status === 'pending').length,

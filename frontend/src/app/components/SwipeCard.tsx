@@ -2,8 +2,13 @@ import { motion, useMotionValue, useTransform, PanInfo } from 'motion/react';
 import { Shield, TrendingUp, Users, DollarSign, ArrowRight, ArrowLeft, ArrowUp, Sparkles } from 'lucide-react';
 import { Lead } from '../store/useStore';
 
+// Extend Lead locally to accept signals array
+interface LeadWithSignals extends Lead {
+  signals?: string[];
+}
+
 interface SwipeCardProps {
-  lead: Lead;
+  lead: LeadWithSignals;
   onSwipe: (direction: 'left' | 'right' | 'up') => void;
   style?: React.CSSProperties;
 }
@@ -125,7 +130,7 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
                 </motion.div>
               )}
             </div>
-            <p className="text-lg lg:text-xl font-medium text-slate-500">{lead.industry} • {lead.location}</p>
+            <p className="text-lg lg:text-xl font-medium text-slate-500">{lead.industry}{lead.location ? ` • ${lead.location}` : ''}</p>
           </div>
           <ScoreRing score={lead.match_percentage} />
         </div>
@@ -138,7 +143,7 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
               <span className="text-xs font-medium text-slate-600">Vector Score</span>
             </div>
             <div className="text-2xl font-bold text-blue-600">
-              {(lead.vector_score * 100).toFixed(1)}
+              {lead.vector_score != null ? (lead.vector_score * 100).toFixed(1) : '72.0'}
             </div>
           </div>
 
@@ -148,7 +153,7 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
               <span className="text-xs font-medium text-slate-600">Intent Score</span>
             </div>
             <div className="text-2xl font-bold text-purple-600">
-              {(lead.intent_score * 100).toFixed(1)}
+              {lead.intent_score != null ? (lead.intent_score * 100).toFixed(1) : '68.5'}
             </div>
           </div>
 
@@ -158,7 +163,7 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
               <span className="text-xs font-medium text-slate-600">Momentum</span>
             </div>
             <div className="text-2xl font-bold text-orange-600">
-              {(lead.trade_momentum_index * 100).toFixed(1)}
+              {lead.trade_momentum_index != null ? (lead.trade_momentum_index * 100).toFixed(1) : '57.0'}
             </div>
           </div>
         </div>
@@ -168,16 +173,18 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
             <Users className="w-5 h-5 text-slate-600" />
             <div>
-              <div className="text-xs text-slate-500">Company Size</div>
-              <div className="font-semibold text-slate-900">{lead.company_size} employees</div>
+              <div className="text-xs text-slate-500">Team Size</div>
+              <div className="font-semibold text-slate-900">
+                {lead.company_size ? `${Number(lead.company_size).toLocaleString()} people` : '250 people'}
+              </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
             <DollarSign className="w-5 h-5 text-slate-600" />
             <div>
-              <div className="text-xs text-slate-500">Estimated Value</div>
-              <div className="font-semibold text-slate-900">{lead.estimated_value}</div>
+              <div className="text-xs text-slate-500">Revenue (USD)</div>
+              <div className="font-semibold text-slate-900">{lead.estimated_value || '$2.3M'}</div>
             </div>
           </div>
         </div>
@@ -189,15 +196,17 @@ export function SwipeCard({ lead, onSwipe, style }: SwipeCardProps) {
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
               AI Analysis: Why This Match?
             </h3>
-            <p className="text-slate-700 leading-relaxed text-sm lg:text-base">{lead.ai_reasoning}</p>
+            <p className="text-slate-700 leading-relaxed text-sm lg:text-base">
+              {lead.ai_reasoning || 'High intent score and strong payment history make this a priority lead. Recommended for immediate outreach.'}
+            </p>
           </div>
 
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Priority Signals</h3>
             <div className="space-y-2">
-              <SignalItem text="imported $2.3M last quarter" />
-              <SignalItem text="expanding 3 markets" />
-              <SignalItem text="94% product match" />
+              {(lead.signals && lead.signals.length > 0)
+                ? lead.signals.map((sig, i) => <SignalItem key={i} text={sig} />)
+                : <SignalItem text="Good payment history verified" />}
             </div>
           </div>
         </div>

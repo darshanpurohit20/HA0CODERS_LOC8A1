@@ -1,16 +1,58 @@
 import { useStore } from '../store/useStore';
 import { motion } from 'motion/react';
-import { Search, Mail, Phone, ExternalLink, Shield, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Mail, Phone, ExternalLink, Shield } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+const API = "http://10.120.101.22:8005";
 
 export function ApprovedLeads() {
-  const { approvedLeads } = useStore();
+  const { approvedLeads, setApprovedLeads } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
 
+  // ✅ Fetch approved leads from backend on mount so data stays after refresh
+  useEffect(() => {
+    const fetchApproved = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (!user.email) return;
+
+        const res = await fetch(`${API}/approved-leads?user_email=${encodeURIComponent(user.email)}`);
+        const data = await res.json();
+
+        const formatted = data.map((item: any) => {
+          const lead = item.lead_data || {};
+          return {
+            id: item.lead_id,
+            company_name: lead.Buyer_ID || lead.company_name || item.lead_id,
+            industry: lead.Industry || lead.industry || '',
+            location: lead.Country || lead.location || '',
+            country: lead.Country || '',
+            revenue: lead.Revenue_Size_USD || '',
+            match_percentage: 0,
+            vector_score: 0,
+            intent_score: 0,
+            trade_momentum_index: 0,
+            company_size: '',
+            estimated_value: '',
+            contact_person: '',
+            trust_verified: false,
+            status: 'approved' as const
+          };
+        });
+
+        setApprovedLeads(formatted);
+      } catch (err) {
+        console.error("Error fetching approved leads:", err);
+      }
+    };
+
+    fetchApproved();
+  }, [setApprovedLeads]);
+
   const filteredLeads = approvedLeads.filter(lead =>
-    lead.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lead.industry.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    lead.location.toLowerCase().includes(searchQuery.toLowerCase())
+    (lead.company_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (lead.industry || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (lead.location || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -59,49 +101,27 @@ export function ApprovedLeads() {
                       <Shield className="w-5 h-5 text-green-500 fill-green-100" />
                     )}
                   </div>
-                  <p className="text-slate-600">{lead.industry} • {lead.location}</p>
+                  <p className="text-slate-600">{lead.industry}{lead.location ? ` • ${lead.location}` : ''}</p>
                 </div>
                 <div className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white px-4 py-2 rounded-xl">
-                  <div className="text-2xl font-bold">{lead.match_percentage}%</div>
-                </div>
-              </div>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="bg-blue-50 p-3 rounded-lg text-center">
-                  <div className="text-xs text-slate-600 mb-1">Vector</div>
-                  <div className="text-lg font-bold text-blue-600">
-                    {(lead.vector_score * 100).toFixed(0)}
-                  </div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg text-center">
-                  <div className="text-xs text-slate-600 mb-1">Intent</div>
-                  <div className="text-lg font-bold text-purple-600">
-                    {(lead.intent_score * 100).toFixed(0)}
-                  </div>
-                </div>
-                <div className="bg-orange-50 p-3 rounded-lg text-center">
-                  <div className="text-xs text-slate-600 mb-1">Momentum</div>
-                  <div className="text-lg font-bold text-orange-600">
-                    {(lead.trade_momentum_index * 100).toFixed(0)}
-                  </div>
+                  <div className="text-sm font-semibold">Approved</div>
                 </div>
               </div>
 
               {/* Details */}
               <div className="space-y-2 mb-4 text-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Company Size:</span>
-                  <span className="font-semibold text-slate-900">{lead.company_size}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Est. Value:</span>
-                  <span className="font-semibold text-slate-900">{lead.estimated_value}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Contact:</span>
-                  <span className="font-semibold text-slate-900">{lead.contact_person}</span>
-                </div>
+                {lead.country && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Country:</span>
+                    <span className="font-semibold text-slate-900">{lead.country}</span>
+                  </div>
+                )}
+                {lead.revenue && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Revenue:</span>
+                    <span className="font-semibold text-slate-900">{lead.revenue}</span>
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
