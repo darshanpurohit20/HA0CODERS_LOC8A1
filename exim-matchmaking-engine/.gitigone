@@ -1,0 +1,5 @@
+__MACOSX/
+.ipynb_checkpoints/
+.config/
+sample_data/
+.gitignore
