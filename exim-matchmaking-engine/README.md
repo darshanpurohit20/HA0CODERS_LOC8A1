@@ -1,4 +1,4 @@
-# 🚀 Swipe-to-Export: Intelligent Matchmaking Algorithm
+#  Trade Intent Prediction Engine: Intelligent Matchmaking Algorithm
 ## Complete Architecture & Integration Guide
 
 ---
